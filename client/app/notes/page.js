@@ -10,6 +10,7 @@ export default function NotesPage() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -151,6 +152,15 @@ export default function NotesPage() {
     }
   };
 
+  const filteredNotes = notes.filter((note) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      (note.title && note.title.toLowerCase().includes(query)) ||
+      (note.content && note.content.toLowerCase().includes(query))
+    );
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -201,11 +211,32 @@ export default function NotesPage() {
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Your Notes</h2>
-            <span className="text-xs text-gray-500 font-medium">
-              {notes.length} {notes.length === 1 ? 'note' : 'notes'}
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-900">Your Notes</h2>
+              <span className="text-xs text-gray-500 font-medium">
+                {filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'}
+              </span>
+            </div>
+
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Search notes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-1.5 pr-8 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-semibold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
 
           {loading && (
@@ -229,106 +260,131 @@ export default function NotesPage() {
             </div>
           )}
 
-          {!loading && notes.length > 0 && (
+          {!loading && notes.length > 0 && filteredNotes.length === 0 && (
+            <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
+              <p className="text-gray-500 text-base font-medium">No matching notes</p>
+              <p className="text-gray-400 text-sm mt-1">
+                No notes found matching &quot;{searchQuery}&quot;
+              </p>
+            </div>
+          )}
+
+          {!loading && filteredNotes.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {notes.map((note) => (
+              {filteredNotes.map((note) => (
                 <div
                   key={note.id}
                   className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm flex flex-col justify-between"
                 >
-                  {editingId === note.id ? (
-                    <form onSubmit={handleUpdateNote} className="space-y-3">
-                      {editError && (
-                        <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded">
-                          {editError}
-                        </div>
-                      )}
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Title
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          maxLength={100}
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Content
-                        </label>
-                        <textarea
-                          rows={4}
-                          required
-                          maxLength={5000}
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={cancelEditing}
-                          disabled={editLoading}
-                          className="px-3 py-1.5 border border-gray-300 text-gray-700 hover:bg-gray-100 rounded text-xs font-medium"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={editLoading}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50"
-                        >
-                          {editLoading ? 'Saving...' : 'Save Changes'}
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 text-base mb-2 break-words">
-                          {note.title}
-                        </h3>
-                        <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">
-                          {note.content}
-                        </p>
-                      </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-base mb-2 break-words">
+                      {note.title}
+                    </h3>
+                    <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">
+                      {note.content}
+                    </p>
+                  </div>
 
-                      <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                        <span>
-                          {new Date(note.updated_at || note.created_at).toLocaleDateString(undefined, {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => startEditing(note)}
-                            className="text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-50"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                    <span>
+                      {new Date(note.updated_at || note.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEditing(note)}
+                        className="text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </section>
       </main>
+
+      {editingId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg border border-gray-200 max-w-lg w-full p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Note</h3>
+              <button
+                type="button"
+                onClick={cancelEditing}
+                className="text-gray-400 hover:text-gray-600 text-sm font-semibold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {editError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
+                {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateNote} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={100}
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Content
+                </label>
+                <textarea
+                  rows={5}
+                  required
+                  maxLength={5000}
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  disabled={editLoading}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-100 rounded text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium disabled:opacity-50 transition-colors"
+                >
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

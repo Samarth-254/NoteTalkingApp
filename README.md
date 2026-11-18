@@ -4,7 +4,7 @@ A fundamentally sound, lightweight, and secure full-stack Note-Taking applicatio
 
 ---
 
-## 📌 Project Overview & Features
+## Project Overview & Features
 
 - **Authentication**: User signup and login powered by bcrypt for salted password hashing and stateless JWT (JSON Web Tokens).
 - **Private Notes**: Complete CRUD functionality (Create, Read, Update, Delete) strictly isolated per user.
@@ -15,7 +15,7 @@ A fundamentally sound, lightweight, and secure full-stack Note-Taking applicatio
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 14 (App Router), React, JavaScript (ES6+), Tailwind CSS
 - **Backend**: Node.js, Express.js (REST API)
@@ -26,7 +26,7 @@ A fundamentally sound, lightweight, and secure full-stack Note-Taking applicatio
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```text
 NoteTalkingApp/
@@ -71,7 +71,7 @@ NoteTalkingApp/
 
 ---
 
-## 🚀 Local Setup Step-by-Step
+## Local Setup Step-by-Step
 
 ### 1. Prerequisites
 - **Node.js** v18+ and **npm**
@@ -148,7 +148,7 @@ http://localhost:3000
 
 ---
 
-## 📡 API Endpoint Reference
+## API Endpoint Reference
 
 | Method | Endpoint | Auth Required | Description | Status Codes |
 |---|---|---|---|---|
@@ -163,7 +163,7 @@ http://localhost:3000
 
 ---
 
-## 🔒 Security Decisions
+## Security Decisions
 
 1. **Password Hashing**: Passwords are hashed with `bcrypt` (10 salt rounds) before entering the database. Hashes are irreversible and plain passwords are never stored or logged.
 2. **Never Exposing Passwords**: Passwords and password hashes are explicitly omitted from all database SELECT/RETURNING clauses in responses.
@@ -176,36 +176,3 @@ http://localhost:3000
 5. **Generic Auth Errors**: Both nonexistent email and incorrect password return the same generic message: `"Invalid credentials"`, preventing account enumeration.
 6. **Central Error Handler**: Stack traces and internal DB messages are suppressed. Only clean, consistent error objects `{ "error": "message" }` reach clients.
 7. **HTTP Security Headers & CORS**: `helmet` is enabled for defensive HTTP response headers, and CORS is locked down to `CLIENT_URL`.
-
----
-
-## 🌐 Deployment Steps
-
-### Backend Deployment (Render)
-1. Push code to GitHub.
-2. Log in to [Render](https://render.com) and click **New Web Service**.
-3. Connect your repository and set:
-   - **Root Directory**: `server`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node index.js`
-4. In the **Environment Variables** section, add:
-   - `DATABASE_URL`: Your Neon connection string (with `?sslmode=require`)
-   - `JWT_SECRET`: A secure 32+ character random string
-   - `PORT`: `10000` (or leave default, Render sets `PORT` automatically)
-   - `CLIENT_URL`: Your deployed frontend URL (e.g., `https://your-app.vercel.app`)
-5. Click **Deploy**. Note your backend URL (e.g., `https://your-api.onrender.com`).
-6. Run migrations on the remote Neon database either locally with the Neon connection string (`npm run migrate`) or via Render's shell.
-
-### Frontend Deployment (Vercel)
-1. Log in to [Vercel](https://vercel.com) and click **Add New > Project**.
-2. Select your repository.
-3. In project settings:
-   - **Root Directory**: Edit and set to `client`
-   - **Framework Preset**: Next.js
-4. Under **Environment Variables**, add:
-   - `NEXT_PUBLIC_API_URL`: Your deployed Render backend URL (e.g., `https://your-api.onrender.com`)
-5. Click **Deploy**.
-
-### Live Links Placeholder
-- **Frontend (Vercel)**: `https://your-app.vercel.app`
-- **Backend API (Render)**: `https://your-api.onrender.com`
